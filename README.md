@@ -83,7 +83,12 @@ python .\src\interview_agent_app\web_agent.py --db .\data\interview_memory.sqlit
 - `src/interview_agent_app/sql/001_init.sql`：完整初始表结构和索引。
 - `src/interview_agent_app/sql/002_compat_columns.sql`：兼容旧数据库的补字段迁移清单。
 - `src/interview_agent_app/interview_agent.py`：LLM client 和面试 Agent 核心逻辑。
-- `src/interview_agent_app/web_agent.py`：当前标准库 Web 服务和页面。
+- `src/interview_agent_app/web_agent.py`：标准库 HTTP 服务、路由和 API handler。
+- `src/interview_agent_app/web_sessions.py`：Web 训练会话创建、响应组装和 LLM 事件元数据。
+- `src/interview_agent_app/web_ui.py`：HTML 模板渲染和静态资源读取。
+- `src/interview_agent_app/templates/index.html`：Web 页面结构。
+- `src/interview_agent_app/static/styles.css`：Web 页面样式。
+- `src/interview_agent_app/static/app.js`：Web 页面交互逻辑。
 
 不调用大模型的自检：
 

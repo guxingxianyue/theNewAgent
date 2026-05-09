@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Programming Interview Agent</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">AI</div>
+        <div>
+          <h1>面试加油站</h1>
+          <p class="subtitle">程序员面试训练</p>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="主导航">
+        <button id="startBtn" type="button" class="nav-button active"><span class="nav-icon">▶</span>开始练习</button>
+        <button id="historyBtn" type="button" class="nav-button"><span class="nav-icon">↺</span>训练记录</button>
+        <button id="memoryBtn" type="button" class="nav-button"><span class="nav-icon">M</span>知识库</button>
+        <button id="wrongBookBtn" type="button" class="nav-button"><span class="nav-icon">!</span>错题本</button>
+        <button id="wrongBtn" type="button" class="nav-button"><span class="nav-icon">R</span>错题重练</button>
+        <button id="progressBtn" type="button" class="nav-button"><span class="nav-icon">%</span>训练进度</button>
+      </nav>
+
+      <div class="sidebar-user">
+        <div class="avatar">U</div>
+        <div>
+          <strong id="userName">default</strong>
+          <p class="subtitle" id="userRole">准备开始训练</p>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-shell">
+      <header class="topbar">
+        <div class="topbar-title">
+          <strong id="sessionTitle">综合编程面试 · Medium</strong>
+          <span id="status" class="status">配置训练参数后点击开始练习。</span>
+        </div>
+        <div class="topbar-actions">
+          <span class="timer" id="timer">00:00:00</span>
+          <button id="pauseBtn" type="button" class="icon-button" title="暂停计时">Ⅱ</button>
+          <button id="resetBtn" type="button" class="danger" disabled>结束练习</button>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <div class="workspace-layout">
+          <section class="center-column">
+            <article id="problemCard" class="panel problem-card">
+              <div id="emptyState" class="empty-state">
+                <strong>准备好后开始一场面试训练</strong>
+                <p>题目会固定展示在这里，提示、评估和参考答案会按训练流程追加。右侧可以调整难度、题型、模型和温度。</p>
+              </div>
+              <div id="problemView" hidden>
+                <div class="panel-header">
+                  <h2 class="panel-title" id="problemTitle">第 1 / 3 题</h2>
+                  <span class="panel-chip" id="problemMeta">Python · Medium</span>
+                </div>
+                <div id="problemBody"></div>
+              </div>
+            </article>
+
+            <article id="hintCard" class="panel hint-card">
+              <div class="panel-header">
+                <h2 class="panel-title">提示</h2>
+                <button id="hintToggle" type="button" class="hint-toggle" title="折叠提示">⌃</button>
+              </div>
+              <div id="hintBody"></div>
+            </article>
+
+            <section id="log" class="extra-log" aria-live="polite"></section>
+
+            <article class="panel editor-card">
+              <div class="panel-header">
+                <h2 class="panel-title" id="editorTitle">代码编写（Python）</h2>
+                <div class="editor-toolbar">
+                  <button type="button" class="tool-button" title="放大编辑区">↗</button>
+                  <button type="button" class="tool-button" id="draftBtn" title="保存草稿">□</button>
+                  <button type="button" class="tool-button" id="themeBtn" title="切换编辑器亮度">☼</button>
+                </div>
+              </div>
+              <div class="editor-shell">
+                <div id="lineNumbers" class="line-numbers">1</div>
+                <textarea id="solution" class="code-input" placeholder="// 在这里编写你的思路或代码..." disabled></textarea>
+              </div>
+              <div class="editor-actions">
+                <button id="prevBtn" type="button" class="ghost" disabled>上一题</button>
+                <div class="action-group">
+                  <button id="hintBtn" type="button" class="ghost" disabled>提示</button>
+                  <button id="answerBtn" type="button" class="warn" disabled>参考答案</button>
+                  <button id="nextBtn" type="button" class="ghost" disabled>下一题</button>
+                  <button id="submitBtn" type="button" class="primary" disabled>提交并评估</button>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="right-column">
+            <article class="panel settings-panel">
+              <div class="panel-header">
+                <h2 class="panel-title">练习设置</h2>
+                <span class="small">实时生效</span>
+              </div>
+              <div class="settings-grid">
+                <div class="preset-grid">
+                  <button type="button" class="preset active" data-target="Python">Python</button>
+                  <button type="button" class="preset" data-target="Java">Java</button>
+                  <button type="button" class="preset" data-target="AI Agent">AI Agent</button>
+                </div>
+                <input id="language" type="hidden" value="Python" />
+                <div class="setting-line">
+                  <label for="difficulty">难度</label>
+                  <select id="difficulty" class="setting-native">__DIFFICULTY_OPTIONS__</select>
+                </div>
+                <div class="setting-line">
+                  <label for="topic">题目类型</label>
+                  <select id="topic" class="setting-native">__TOPIC_OPTIONS__</select>
+                </div>
+                <div class="setting-line">
+                  <label for="mode">模式</label>
+                  <select id="mode" class="setting-native">
+                    <option value="practice" selected>练习模式</option>
+                    <option value="mock">模拟面试</option>
+                    <option value="review">错题重练</option>
+                  </select>
+                </div>
+                <div class="setting-line">
+                  <label for="rounds">题数</label>
+                  <input id="rounds" type="number" min="1" max="20" value="3" />
+                </div>
+                <div class="setting-line">
+                  <label for="temperature">温度</label>
+                  <input id="temperature" type="number" min="0" max="2" step="0.1" value="0.7" />
+                </div>
+              </div>
+              <details class="advanced-settings">
+                <summary>高级配置 / API</summary>
+                <div class="advanced-fields">
+                  <div class="field">
+                    <label for="apiKey">API Key</label>
+                    <input id="apiKey" type="password" autocomplete="off" placeholder="可留空使用环境变量" />
+                  </div>
+                  <div class="field">
+                    <label for="operator">操作者</label>
+                    <input id="operator" value="default" />
+                  </div>
+                  <div class="field">
+                    <label for="baseUrl">Base URL</label>
+                    <input id="baseUrl" value="__DEFAULT_BASE_URL__" />
+                  </div>
+                  <div class="field">
+                    <label for="model">模型</label>
+                    <input id="model" value="__DEFAULT_MODEL__" />
+                  </div>
+                </div>
+              </details>
+            </article>
+
+            <article class="panel progress-card">
+              <div class="panel-header">
+                <h2 class="panel-title">进度</h2>
+              </div>
+              <div class="progress-body">
+                <div id="progressRing" class="progress-ring"><strong id="progressText">0/3</strong></div>
+                <div id="progressDetail" class="progress-detail">尚未开始<br />共 3 题</div>
+              </div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">AI 助手</h2>
+              </div>
+              <div class="assistant-prompts">
+                <div class="assistant-note">有任何问题都可以问我哦~</div>
+                <button type="button" class="assistant-prompt" data-hint disabled>这道题的考察点是什么？</button>
+                <button type="button" class="assistant-prompt" data-hint disabled>有什么解题思路建议？</button>
+                <button type="button" class="assistant-prompt" data-hint disabled>代码优化建议</button>
+              </div>
+            </article>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>window.INTERVIEW_TOPICS = __TOPICS_JSON__;</script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
