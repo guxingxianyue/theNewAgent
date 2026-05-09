@@ -45,15 +45,16 @@ Web 版支持三种训练模式：
 
 ## SQLite 知识库
 
-默认会在当前目录创建：
+默认会在 `data/` 目录下创建本地训练数据库：
 
 ```text
-interview_memory.sqlite3
+data/interview_memory.sqlite3
 ```
 
-也可以指定路径：
+也可以用环境变量或启动参数指定路径：
 
 ```powershell
+$env:INTERVIEW_AGENT_DB=".\data\interview_memory.sqlite3"
 python .\src\interview_agent_app\web_agent.py --db .\data\interview_memory.sqlite3
 ```
 

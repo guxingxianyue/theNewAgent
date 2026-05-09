@@ -1,0 +1,19 @@
+# IDE/editor local state
+.idea/
+.vscode/
+
+# Python runtime artifacts
+__pycache__/
+*.py[cod]
+
+# Local training data and SQLite runtime files
+interview_memory.sqlite*
+data/*.sqlite*
+data/*.db
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
+# Local env files
+.env
+.env.*

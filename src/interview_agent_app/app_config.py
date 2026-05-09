@@ -8,7 +8,7 @@ import os
 DEFAULT_BASE_URL = os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL") or "https://api.openai.com/v1"
 DEFAULT_MODEL = os.getenv("LLM_MODEL") or "gpt-4o-mini"
 DEFAULT_API_KEY = os.getenv("LLM_API_KEY") or os.getenv("OPENAI_API_KEY") or ""
-DEFAULT_DB_PATH = os.getenv("INTERVIEW_AGENT_DB") or "interview_memory.sqlite3"
+DEFAULT_DB_PATH = os.getenv("INTERVIEW_AGENT_DB") or os.path.join("data", "interview_memory.sqlite3")
 
 INTERVIEW_TARGETS = ["Python", "Java", "AI Agent"]
 TRAINING_MODES = ["practice", "mock", "review"]
