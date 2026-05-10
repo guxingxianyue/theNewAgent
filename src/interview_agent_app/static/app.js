@@ -8,11 +8,13 @@ const state = {
   timerId: null,
   timerPaused: false,
   elapsedBeforePause: 0,
+  resultItems: [],
+  activeResultId: null,
+  resultSeq: 0,
 };
 const topicsByTarget = window.INTERVIEW_TOPICS || {};
 
 const $ = (id) => document.getElementById(id);
-const log = $("log");
 const customSelects = new Map();
 
 function setTarget(target) {
@@ -251,12 +253,14 @@ function renderTimer() {
 }
 
 function clearLog() {
-  log.innerHTML = "";
+  state.resultItems = [];
+  state.activeResultId = null;
+  state.resultSeq = 0;
   $("emptyState").hidden = false;
   $("problemView").hidden = true;
-  $("hintCard").classList.remove("visible");
   $("problemBody").innerHTML = "";
-  $("hintBody").innerHTML = "";
+  renderResultHistory();
+  renderEmptyResult();
 }
 
 function addMessage(title, content, meta) {
@@ -264,11 +268,7 @@ function addMessage(title, content, meta) {
     showProblem(title, content);
     return;
   }
-  if (title === "提示") {
-    showHint(content);
-    return;
-  }
-  appendLogMessage(title, content, meta);
+  showResult(title, content, meta);
 }
 
 function isProblemTitle(title) {
@@ -283,35 +283,98 @@ function showProblem(title, content) {
     : title;
   $("problemBody").innerHTML = "";
   $("problemBody").appendChild(renderMessageBody(content));
-  $("hintCard").classList.remove("visible");
-  $("hintBody").innerHTML = "";
 }
 
-function showHint(content) {
-  $("hintBody").innerHTML = "";
-  $("hintBody").appendChild(renderMessageBody(content));
-  $("hintCard").classList.add("visible");
+function renderEmptyResult() {
+  state.activeResultId = null;
+  $("activeResultTitle").textContent = "最新反馈";
+  $("activeResultMeta").textContent = "提示、参考答案和评估会显示在这里";
+  $("activeResultBody").innerHTML = '<div class="result-empty">开始训练后，这里会显示最新提示、参考答案或评估结果。</div>';
 }
 
-function appendLogMessage(title, content, meta) {
-  const article = document.createElement("article");
-  article.className = "message";
-  const header = document.createElement("header");
-  const heading = document.createElement("span");
-  heading.textContent = title;
-  const info = document.createElement("span");
-  info.className = "small";
-  info.textContent = meta || currentMetaText();
-  const metadata = parseEvaluationJson(content);
-  const body = renderMessageBody(content);
-  header.append(heading, info);
-  article.append(header);
-  if (metadata) {
-    article.appendChild(renderScoreCard(metadata));
+function showResult(title, content, meta) {
+  pushResultItem({
+    title,
+    content,
+    meta,
+  });
+}
+
+function showResultView(title, render, meta, preview) {
+  pushResultItem({
+    title,
+    render,
+    meta,
+    preview,
+  });
+}
+
+function pushResultItem(input) {
+  state.resultSeq += 1;
+  const item = {
+    id: `result-${Date.now()}-${state.resultSeq}`,
+    title: input.title || "最新反馈",
+    content: input.content || "",
+    render: typeof input.render === "function" ? input.render : null,
+    meta: input.meta || currentMetaText(),
+    preview: input.preview || "",
+    createdAt: new Date(),
+  };
+  state.resultItems.unshift(item);
+  state.resultItems = state.resultItems.slice(0, 30);
+  renderActiveResult(item);
+  renderResultHistory();
+}
+
+function renderActiveResult(item) {
+  state.activeResultId = item.id;
+  $("activeResultTitle").textContent = item.title;
+  $("activeResultMeta").textContent = item.meta || "";
+  $("activeResultBody").innerHTML = "";
+  if (item.render) {
+    $("activeResultBody").appendChild(item.render());
+  } else {
+    const metadata = parseEvaluationJson(item.content);
+    if (metadata) {
+      $("activeResultBody").appendChild(renderScoreCard(metadata));
+    }
+    $("activeResultBody").appendChild(renderMessageBody(item.content));
   }
-  article.append(body);
-  log.appendChild(article);
-  article.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  $("activeResultBody").scrollTop = 0;
+  renderResultHistory();
+}
+
+function renderResultHistory() {
+  $("resultHistory").innerHTML = "";
+  $("resultHistoryCount").textContent = String(state.resultItems.length);
+  if (!state.resultItems.length) {
+    const empty = document.createElement("div");
+    empty.className = "small";
+    empty.textContent = "暂无历史记录";
+    $("resultHistory").appendChild(empty);
+    return;
+  }
+  state.resultItems.forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "history-entry";
+    button.classList.toggle("active", item.id === state.activeResultId);
+    const title = document.createElement("strong");
+    title.textContent = item.title;
+    const preview = document.createElement("span");
+    preview.textContent = resultPreview(item);
+    const time = document.createElement("small");
+    time.textContent = item.createdAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    button.append(title, preview, time);
+    button.addEventListener("click", () => renderActiveResult(item));
+    $("resultHistory").appendChild(button);
+  });
+}
+
+function resultPreview(item) {
+  const source = item.preview || item.content || "";
+  const text = cleanDisplayText(stripEvaluationJson(source)).replace(/\s+/g, " ").trim();
+  return text ? text.slice(0, 58) : "暂无内容";
 }
 
 function currentMetaText() {
@@ -619,8 +682,7 @@ function renderProgress(data) {
   const recent = (data.recent || []).map((item) => `${item.day}: ${item.avg_score ?? "无"} 分 / ${item.count} 次`).join("\n") || "暂无";
   body.textContent = `薄弱点排行：${weak}\n\n方向表现：\n${byTarget}\n\n最近训练：\n${recent}`;
   article.append(header, stats, body);
-  log.appendChild(article);
-  log.scrollTop = log.scrollHeight;
+  showResultView("训练进度", () => article, "SQLite 知识库", body.textContent);
 }
 
 async function showWrongBook() {
@@ -679,8 +741,7 @@ function renderWrongBook(items) {
   info.textContent = "低于 70 分或未评分的评估";
   header.append(heading, info);
   article.append(header, wrapper);
-  log.appendChild(article);
-  log.scrollTop = log.scrollHeight;
+  showResultView("错题本", () => article, "低于 70 分或未评分的评估", wrapper.textContent);
 }
 
 function renderHistory(sessions) {
@@ -720,8 +781,7 @@ function renderHistory(sessions) {
   info.textContent = "SQLite 知识库";
   header.append(heading, info);
   article.append(header, wrapper);
-  log.appendChild(article);
-  log.scrollTop = log.scrollHeight;
+  showResultView("训练历史", () => article, "SQLite 知识库", wrapper.textContent);
 }
 
 async function showSessionDetail(sessionId) {
@@ -859,13 +919,6 @@ function updateLineNumbers() {
   $("lineNumbers").textContent = Array.from({ length: count }, (_, index) => index + 1).join("\n");
 }
 
-function toggleHintCard() {
-  const body = $("hintBody");
-  const hidden = body.hidden;
-  body.hidden = !hidden;
-  $("hintToggle").textContent = hidden ? "⌃" : "⌄";
-}
-
 $("startBtn").addEventListener("click", startSession);
 $("memoryBtn").addEventListener("click", showMemory);
 $("progressBtn").addEventListener("click", showProgress);
@@ -879,7 +932,6 @@ $("answerBtn").addEventListener("click", () => sendAction("answer"));
 $("nextBtn").addEventListener("click", () => sendAction("next"));
 $("pauseBtn").addEventListener("click", toggleTimer);
 $("draftBtn").addEventListener("click", saveDraft);
-$("hintToggle").addEventListener("click", toggleHintCard);
 $("solution").addEventListener("input", updateLineNumbers);
 $("operator").addEventListener("input", syncStaticLabels);
 $("difficulty").addEventListener("change", updateControls);
@@ -897,6 +949,7 @@ document.querySelectorAll(".preset").forEach((button) => {
 initCustomSelects();
 restoreDraft();
 updateLineNumbers();
+renderResultHistory();
 syncProgress();
 syncStaticLabels();
 updateControls();

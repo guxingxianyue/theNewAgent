@@ -15,6 +15,10 @@
 
 * { box-sizing: border-box; }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -250,6 +254,32 @@ button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
   padding: 15px;
   line-height: 1.62;
   font-size: 14px;
+}
+
+.message-body::-webkit-scrollbar,
+.active-result-body::-webkit-scrollbar,
+.result-history::-webkit-scrollbar,
+.assistant-prompts::-webkit-scrollbar,
+.right-column::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.message-body::-webkit-scrollbar-thumb,
+.active-result-body::-webkit-scrollbar-thumb,
+.result-history::-webkit-scrollbar-thumb,
+.assistant-prompts::-webkit-scrollbar-thumb,
+.right-column::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #cbd5df;
+}
+
+.message-body::-webkit-scrollbar-track,
+.active-result-body::-webkit-scrollbar-track,
+.result-history::-webkit-scrollbar-track,
+.assistant-prompts::-webkit-scrollbar-track,
+.right-column::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .message-body h3 {
@@ -536,10 +566,10 @@ body {
 
 .main-shell {
   display: grid;
-  grid-template-rows: 78px minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   min-width: 0;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow: visible;
 }
 
 .topbar {
@@ -581,27 +611,41 @@ body {
 
 .workspace {
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
   padding: 24px 28px 40px;
 }
 
 .workspace-layout {
   display: grid;
   width: 100%;
+  height: calc(100vh - 142px);
+  min-height: 0;
   grid-template-columns: minmax(720px, 1fr) 320px;
   gap: 24px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .center-column, .right-column {
   display: grid;
   gap: 20px;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.center-column {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .right-column {
-  position: sticky;
-  top: 24px;
+  align-content: start;
+  overflow-y: auto;
+  max-height: 100%;
+  scrollbar-gutter: stable;
+  padding-right: 6px;
+  position: static;
 }
 
 .panel {
@@ -643,31 +687,24 @@ body {
 
 .problem-card .message-body,
 .hint-card .message-body {
-  max-height: none;
   padding: 4px 22px 24px;
   font-size: 15px;
   color: #111827;
 }
 
+.problem-card .message-body {
+  max-height: clamp(150px, 22vh, 260px);
+  overflow: auto;
+}
+
+.hint-card .message-body {
+  max-height: clamp(90px, 14vh, 170px);
+  overflow: auto;
+}
+
 .problem-card .message-body p,
 .hint-card .message-body p {
   margin: 10px 0;
-}
-
-.hint-card {
-  display: none;
-}
-
-.hint-card.visible {
-  display: block;
-}
-
-.hint-toggle {
-  border: 0;
-  background: transparent;
-  min-height: 32px;
-  padding: 0 4px;
-  color: #475467;
 }
 
 .empty-state {
@@ -689,9 +726,103 @@ body {
   line-height: 1.7;
 }
 
-.extra-log {
+.result-zone {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
   gap: 16px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.active-result,
+.result-history-panel {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.active-result-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 14px 18px 18px;
+}
+
+.active-result-body .score-card {
+  margin: -14px -18px 14px;
+}
+
+.active-result-body .message-body {
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+}
+
+.active-result-body > .message {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.active-result-body > .message > header {
+  display: none;
+}
+
+.active-result-body > .message pre {
+  padding: 0;
+}
+
+.result-empty {
+  height: 100%;
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  color: #667085;
+  line-height: 1.6;
+  text-align: center;
+  padding: 24px;
+}
+
+.result-history {
+  min-height: 0;
+  overflow: auto;
+  padding: 8px 12px 14px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.history-entry {
+  border: 1px solid #e0e7ef;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 9px 10px;
+  text-align: left;
+  display: grid;
+  gap: 4px;
+}
+
+.history-entry:hover,
+.history-entry.active {
+  transform: none;
+  border-color: rgba(15, 118, 110, 0.35);
+  background: #f2fbf8;
+}
+
+.history-entry strong {
+  color: #101828;
+  font-size: 13px;
+}
+
+.history-entry span {
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.history-entry small {
+  color: #8a96a8;
+  font-size: 11px;
 }
 
 .message {
@@ -710,7 +841,9 @@ body {
 }
 
 .editor-card {
+  z-index: 15;
   overflow: hidden;
+  box-shadow: 0 -8px 28px rgba(15, 23, 42, 0.08);
 }
 
 .editor-toolbar {
@@ -753,11 +886,12 @@ body {
 }
 
 textarea.code-input {
-  min-height: 170px;
-  max-height: 38vh;
+  min-height: 118px;
+  height: clamp(118px, 18vh, 180px);
+  max-height: 24vh;
   border: 0;
   border-radius: 0;
-  resize: vertical;
+  resize: none;
   box-shadow: none;
   font-size: 13px;
   line-height: 1.6;
@@ -770,8 +904,8 @@ textarea.code-input:focus {
 }
 
 .editor-actions {
-  margin-top: 22px;
-  padding: 20px 22px;
+  margin-top: 16px;
+  padding: 16px 22px;
   border-top: 1px solid #edf1f5;
   display: flex;
   justify-content: space-between;
@@ -987,6 +1121,9 @@ textarea.code-input:focus {
   display: grid;
   gap: 10px;
   padding: 12px 18px 20px;
+  max-height: clamp(170px, 26vh, 280px);
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .assistant-note {
@@ -1022,12 +1159,44 @@ textarea.code-input:focus {
 }
 
 @media (max-width: 1180px) {
+  .workspace {
+    overflow: auto;
+  }
+
   .workspace-layout {
+    height: auto;
+    min-height: 100%;
     grid-template-columns: 1fr;
   }
 
-  .right-column {
-    position: static;
+  .center-column, .right-column {
+    overflow: visible;
+    padding-right: 0;
+    height: auto;
+    max-height: none;
+  }
+
+  .center-column {
+    grid-template-rows: none;
+  }
+
+  .result-zone {
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+
+  .active-result,
+  .result-history-panel {
+    min-height: auto;
+  }
+
+  .active-result-body {
+    max-height: min(58vh, 620px);
+    overflow: auto;
+  }
+
+  .result-history {
+    max-height: 240px;
   }
 }
 

@@ -65,15 +65,25 @@
               </div>
             </article>
 
-            <article id="hintCard" class="panel hint-card">
-              <div class="panel-header">
-                <h2 class="panel-title">提示</h2>
-                <button id="hintToggle" type="button" class="hint-toggle" title="折叠提示">⌃</button>
-              </div>
-              <div id="hintBody"></div>
-            </article>
+            <section class="result-zone" aria-live="polite">
+              <article id="activeResult" class="panel active-result">
+                <div class="panel-header">
+                  <h2 class="panel-title" id="activeResultTitle">最新反馈</h2>
+                  <span class="small" id="activeResultMeta">提示、参考答案和评估会显示在这里</span>
+                </div>
+                <div id="activeResultBody" class="active-result-body">
+                  <div class="result-empty">开始训练后，这里会显示最新提示、参考答案或评估结果。</div>
+                </div>
+              </article>
 
-            <section id="log" class="extra-log" aria-live="polite"></section>
+              <aside class="panel result-history-panel">
+                <div class="panel-header">
+                  <h2 class="panel-title">历史记录</h2>
+                  <span class="small" id="resultHistoryCount">0</span>
+                </div>
+                <div id="resultHistory" class="result-history"></div>
+              </aside>
+            </section>
 
             <article class="panel editor-card">
               <div class="panel-header">
